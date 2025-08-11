@@ -7,3 +7,4 @@ assets/*
 site/*
 src/bridge_python_sdk/Examples/out/*
 imgui.ini
+src/bridge_python_sdk/Examples/__pycache__/*
