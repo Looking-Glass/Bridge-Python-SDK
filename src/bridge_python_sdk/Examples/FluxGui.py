@@ -112,6 +112,7 @@ class FluxGUI:
         self.impl = GlfwRenderer(self.window)
 
     def init_bridge(self) -> None:
+        # self.bridge = BridgeAPI(library_path=r"C:\\Users\\alec\\source\\repos\\LookingGlassBridge\\out\\build\\x64-Release")
         self.bridge = BridgeAPI()
         if not self.bridge.initialize("FluxGUI"):
             print("BridgeAPI init failed", file=sys.stderr)
@@ -302,6 +303,7 @@ class FluxGUI:
 
         imgui.render()
         self.impl.render(imgui.get_draw_data())
+        GL.glFinish()
         glfw.swap_buffers(self.window)
 
     def cleanup(self) -> None:
