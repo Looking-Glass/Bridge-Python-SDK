@@ -1,4 +1,5 @@
 venv/*
+.venv/*
 */__pycache__/*
 src/bridge_python_sdk/Rendering/__pycache__/*
 src/bridge_python_sdk/__pycache__/*
