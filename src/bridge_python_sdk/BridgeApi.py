@@ -194,7 +194,10 @@ class BridgeAPI:
                 suffix = { "win32": ".dll", "cygwin": ".dll",
                            "msys":  ".dll",
                            "darwin": ".dylib" }.get(sys.platform, ".so")
-                candidates = sorted(supplied.glob(f"bridge_inproc*{suffix}"))
+                candidates = sorted(
+                    list(supplied.glob(f"libbridge_inproc*{suffix}")) +
+                    list(supplied.glob(f"bridge_inproc*{suffix}"))
+                )
                 if not candidates:
                     self._log(f"No bridge_inproc*{suffix} candidate found in {supplied}")
                     raise FileNotFoundError(
