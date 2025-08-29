@@ -120,7 +120,8 @@ glfw.swap_interval(0)  # disable vsync exactly once
 
 # Init Bridge
 # bridge = BridgeAPI()
-bridge = BridgeAPI(library_path = r"/home/alec/repo/LookingGlassBridge/build")
+# bridge = BridgeAPI(library_path = r"/home/alec/repo/LookingGlassBridge/build")
+bridge = BridgeAPI(library_path = r"C:\\Users\\alec\\source\\repos\\LookingGlassBridge\\out\\build\\x64-Release")
 if not bridge.initialize("DisplayRGBD"):
     print("Bridge initialize failed", file=sys.stderr)
     glfw.destroy_window(dummy)
@@ -133,6 +134,10 @@ if br_wnd == 0:
     glfw.destroy_window(dummy)
     glfw.terminate()
     sys.exit(1)
+
+# Disables monitor state change detection the following things will stop working: closing the window if a looking glass monitor is disconnected, reopening the window when it is reconnected, calibration updates, new monitor connection updates
+# This may reduce lag spikes on some os's
+bridge.set_window_polling(br_wnd, False)
 
 asp, quiltWidth, quiltHeight, cols, rows = bridge.get_default_quilt_settings(br_wnd)
 aspect = float(asp)
@@ -208,7 +213,7 @@ while not glfw.window_should_close(dummy):
         print(f"Avg FPS: {avg_fps:.2f} | p50: {p50:.2f} ms, p90: {p90:.2f} ms, p95: {p95:.2f} ms, p99: {p99:.2f} ms | worst: {worst:.2f} ms")
         print(f"Spikes: {n_spikes} in last {len(ft)} frames (threshold: {thr:.2f} ms = median {med:.2f} + {SPIKE_K_SIGMA_MAD:.1f}×σ_MAD {sigma:.2f}); max spike: {max_spike:.2f} ms")
         if lag is not None and approx_ms is not None:
-            print(f"Pattern: strongest autocorr lag {lag} frames (~{approx_ms:.2f} ms), r={corr:.2f}")
+            print(f"Pattern: strongest autocorr lag {lag} frames (period=~{approx_ms:.2f} ms), r={corr:.2f}")
         else:
             print(f"Pattern: no strong periodicity detected (max r={corr:.2f})")
         print(f"Sparkline (last {min(len(history_times), SPARKLINE_LEN)} frames, ms): {spark}  [{hmin:.1f} .. {hmax:.1f}]")

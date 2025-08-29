@@ -400,6 +400,7 @@ class BridgeAPI:
                                                   POINTER(c_int32), POINTER(c_float),
                                                   POINTER(c_float), POINTER(c_int32),
                                                   POINTER(c_int32), c_void_p],         c_bool),
+            "set_window_polling":               ([c_uint32, c_bool],                    None),
         }
 
         # bind the table above
@@ -501,6 +502,9 @@ class BridgeAPI:
     def show_window(self, window_handle: Window, flag: bool) -> None:
         if not self._show_window(window_handle, flag):
             raise RuntimeError("show_window failed")
+
+    def set_window_polling(self, window_handle: Window, state: bool) -> None:
+        self._set_window_polling(window_handle, state)
 
     # Offscreen
     def get_offscreen_window_texture_gl(self, window_handle: Window) -> tuple[int, PixelFormats, int, int]:

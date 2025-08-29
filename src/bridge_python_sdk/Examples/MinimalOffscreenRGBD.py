@@ -108,7 +108,8 @@ GL.glTexSubImage2D(GL.GL_TEXTURE_2D, 0, 0, 0, src_w, src_h, GL.GL_RGBA, GL.GL_UN
 GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
 
 # ----------------------- Bridge: true offscreen window -----------------------
-bridge = BridgeAPI()
+# bridge = BridgeAPI()
+bridge = BridgeAPI(library_path = r"C:\\Users\\alec\\source\\repos\\LookingGlassBridge\\out\\build\\x64-Release")
 if not bridge.initialize("DisplayRGBD_Offscreen"):
     print("Bridge initialize failed", file=sys.stderr)
     glfw.destroy_window(preview)
