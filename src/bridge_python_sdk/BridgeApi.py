@@ -453,10 +453,14 @@ class BridgeAPI:
             raise RuntimeError("instance_offscreen_window_gl failed")
         return Window(h.value)
     
-    # Texture queries
+# Texture queries
     def get_window_dimensions(self, window_handle: Window) -> tuple[int, int]:
-        w = c_uint(0)
-        h = c_uint(0)
+        if sys.platform.startswith("linux"):
+            w = c_uint64(0)
+            h = c_uint64(0)
+        else:
+            w = c_uint(0)
+            h = c_uint(0)
         if self._get_window_dimensions(window_handle, byref(w), byref(h)):
             return w.value, h.value
         raise RuntimeError("get_window_dimensions failed")
@@ -510,11 +514,14 @@ class BridgeAPI:
     def get_offscreen_window_texture_gl(self, window_handle: Window) -> tuple[int, PixelFormats, int, int]:
         tex = c_uint64(0)
         fmt = c_uint(0)
-        w = c_uint(0)
-        h = c_uint(0)
+        if sys.platform.startswith("linux"):
+            w = c_uint64(0)
+            h = c_uint64(0)
+        else:
+            w = c_uint(0)
+            h = c_uint(0)
         if self._get_offscreen_window_texture_gl(window_handle, byref(tex), byref(fmt), byref(w), byref(h)):
             return tex.value, PixelFormats(fmt.value), w.value, h.value
-        raise RuntimeError("get_offscreen_window_texture_gl failed")
 
     # Display / calibration getters
     def get_default_quilt_settings(self, window_handle: Window) -> tuple[float, int, int, int, int]:

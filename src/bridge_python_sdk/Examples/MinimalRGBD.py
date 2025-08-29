@@ -119,9 +119,9 @@ glfw.make_context_current(dummy)
 glfw.swap_interval(0)  # disable vsync exactly once
 
 # Init Bridge
-# bridge = BridgeAPI()
+bridge = BridgeAPI()
 # bridge = BridgeAPI(library_path = r"/home/alec/repo/LookingGlassBridge/build")
-bridge = BridgeAPI(library_path = r"C:\\Users\\alec\\source\\repos\\LookingGlassBridge\\out\\build\\x64-Release")
+# bridge = BridgeAPI(library_path = r"C:\\Users\\alec\\source\\repos\\LookingGlassBridge\\out\\build\\x64-Release")
 if not bridge.initialize("DisplayRGBD"):
     print("Bridge initialize failed", file=sys.stderr)
     glfw.destroy_window(dummy)
@@ -137,7 +137,7 @@ if br_wnd == 0:
 
 # Disables monitor state change detection the following things will stop working: closing the window if a looking glass monitor is disconnected, reopening the window when it is reconnected, calibration updates, new monitor connection updates
 # This may reduce lag spikes on some os's
-bridge.set_window_polling(br_wnd, False)
+bridge.set_window_polling(br_wnd, True)
 
 asp, quiltWidth, quiltHeight, cols, rows = bridge.get_default_quilt_settings(br_wnd)
 aspect = float(asp)

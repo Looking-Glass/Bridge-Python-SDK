@@ -82,12 +82,54 @@ glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)
 glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
 glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
 glfw.window_hint(glfw.VISIBLE, glfw.TRUE)
+glfw.window_hint(glfw.DECORATED, glfw.FALSE)
+
 preview = glfw.create_window(800, 800, "Offscreen Bridge Preview", None, None)
 if not preview:
     print("Error: failed to create preview window", file=sys.stderr)
     glfw.terminate()
     sys.exit(1)
+
 glfw.make_context_current(preview)
+
+# ----------------------- Bridge: true offscreen window -----------------------
+bridge = BridgeAPI()
+# bridge = BridgeAPI(library_path = r"/home/alec/repo/LookingGlassBridge/build")
+if not bridge.initialize("DisplayRGBD_Offscreen"):
+    print("Bridge initialize failed", file=sys.stderr)
+    glfw.destroy_window(preview)
+    glfw.terminate()
+    sys.exit(1)
+
+br_wnd = bridge.instance_offscreen_window_gl(-1)
+if br_wnd == 0:
+    print("Bridge.instance_offscreen_window_gl failed", file=sys.stderr)
+    glfw.destroy_window(preview)
+    glfw.terminate()
+    sys.exit(1)
+
+bridge.set_window_polling(br_wnd, False)
+
+asp, quilt_w, quilt_h, cols, rows = bridge.get_default_quilt_settings(br_wnd)
+aspect = float(asp)
+
+# --- YOU MUST POSITION THE WINDOW EXACTLY LIKE THIS ---
+
+out_w, out_h = bridge.get_window_dimensions(br_wnd)
+
+try:
+    win_x, win_y = bridge.get_window_position(br_wnd)
+except Exception:
+    try:
+        disp_idx = bridge.get_display_for_window(br_wnd)
+        win_x, win_y = bridge.get_window_position_for_display(disp_idx)
+    except Exception:
+        win_x, win_y = 0, 0
+
+print(f"setting position to {out_w} {out_h} {win_x} {win_y}")
+glfw.set_window_size(preview, int(out_w), int(out_h))
+glfw.set_window_pos(preview, int(win_x), int(win_y))
+
 glfw.swap_interval(0)
 
 # Create GL resources in the preview context
@@ -106,41 +148,6 @@ except Exception:
     GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA8, src_w, src_h, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, None)
 GL.glTexSubImage2D(GL.GL_TEXTURE_2D, 0, 0, 0, src_w, src_h, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, rgbd_np)
 GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
-
-# ----------------------- Bridge: true offscreen window -----------------------
-# bridge = BridgeAPI()
-bridge = BridgeAPI(library_path = r"C:\\Users\\alec\\source\\repos\\LookingGlassBridge\\out\\build\\x64-Release")
-if not bridge.initialize("DisplayRGBD_Offscreen"):
-    print("Bridge initialize failed", file=sys.stderr)
-    glfw.destroy_window(preview)
-    glfw.terminate()
-    sys.exit(1)
-
-br_wnd = bridge.instance_offscreen_window_gl(-1)
-if br_wnd == 0:
-    print("Bridge.instance_offscreen_window_gl failed", file=sys.stderr)
-    glfw.destroy_window(preview)
-    glfw.terminate()
-    sys.exit(1)
-
-asp, quilt_w, quilt_h, cols, rows = bridge.get_default_quilt_settings(br_wnd)
-aspect = float(asp)
-
-# --- YPU MUST POSITION THE WINDOW EXACTLY LIKE THIS ---
-try:
-    out_w, out_h = bridge.get_window_dimensions(br_wnd)
-except Exception:
-    out_w, out_h = quilt_w, quilt_h
-try:
-    win_x, win_y = bridge.get_window_position(br_wnd)
-except Exception:
-    try:
-        disp_idx = bridge.get_display_for_window(br_wnd)
-        win_x, win_y = bridge.get_window_position_for_display(disp_idx)
-    except Exception:
-        win_x, win_y = 0, 0
-glfw.set_window_size(preview, int(out_w), int(out_h))
-glfw.set_window_pos(preview, int(win_x), int(win_y))
 
 # Focus/depthiness mapping consistent with your sample
 focus_input = 0.0
