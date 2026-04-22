@@ -23,7 +23,7 @@ import subprocess
 from BridgeDataTypes import Window, PixelFormats, LKGCalibration, DefaultQuiltSettings
 
 _MIN_BRIDGE_VERSION = "2.6.0"
-_BRIDGE_VERSION     = "2.6.2"
+_BRIDGE_VERSION     = "2.6.3"
 
 # ----------------------------------------------------------------- helpers
 def _ver_tuple(v: str) -> Tuple[int, ...]:

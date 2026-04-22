@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bridge-python-sdk"
-version = "1.0.2"
+version = "1.0.3"
 description = "Bridge Python SDK for Looking Glass Factory"
 readme = "README.md"
 requires-python = ">=3.8"
