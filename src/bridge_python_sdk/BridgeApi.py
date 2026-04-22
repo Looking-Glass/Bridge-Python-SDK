@@ -403,9 +403,17 @@ class BridgeAPI:
             "set_window_polling":               ([c_uint32, c_bool],                    None),
         }
 
-        # bind the table above
+        # bind the table above; optional symbols are skipped gracefully
+        _optional_symbols = {"set_window_polling"}
         for name, (args, ret) in specs.items():
-            setattr(self, f"_{name}", self._bind(self._fn(name), args, ret))
+            try:
+                setattr(self, f"_{name}", self._bind(self._fn(name), args, ret))
+            except AttributeError:
+                if name in _optional_symbols:
+                    self._log(f"Optional symbol '{name}' not found in library — skipping")
+                    setattr(self, f"_{name}", None)
+                else:
+                    raise
 
         # scalar *for_display* getters -----------------------------------
         scalar_map = {
@@ -508,7 +516,8 @@ class BridgeAPI:
             raise RuntimeError("show_window failed")
 
     def set_window_polling(self, window_handle: Window, state: bool) -> None:
-        self._set_window_polling(window_handle, state)
+        if self._set_window_polling is not None:
+            self._set_window_polling(window_handle, state)
 
     # Offscreen
     def get_offscreen_window_texture_gl(self, window_handle: Window) -> tuple[int, PixelFormats, int, int]:
