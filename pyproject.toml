@@ -39,7 +39,8 @@ bridge_python_sdk = [
     "bin/win/*.dll",
     "bin/mac-m1/*.dylib",
     "bin/mac-x64/*.dylib",
-    "bin/ubuntu/*.so"
+    "bin/ubuntu/*.so",
+    "bin/ubuntu/*.so.*"
 ]
 
 [tool.setuptools.exclude-package-data]
