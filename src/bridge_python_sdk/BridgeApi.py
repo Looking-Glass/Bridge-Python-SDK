@@ -301,7 +301,83 @@ class BridgeAPI:
             raise
 
         self._log(f"Successfully loaded {library_path}")
+        if sys.platform.startswith("linux"):
+            self._log_library_info(library_path)
         self._bind_functions()
+
+    # ------------- library diagnostics (Linux only) --------------------
+    def _log_library_info(self, library_path: str) -> None:
+        """Print GCC/GLIBC version requirements and exported symbol info."""
+        import re as _re
+
+        # ---- readelf: minimum GLIBC version required -------------------
+        try:
+            out = subprocess.check_output(
+                ["readelf", "-d", library_path],
+                text=True, stderr=subprocess.STDOUT
+            )
+            # NEEDED entries
+            needed = _re.findall(r'\(NEEDED\)\s+Shared library:\s+\[(.+?)\]', out)
+            if needed:
+                self._log(f"Library NEEDED deps: {', '.join(needed)}")
+        except (FileNotFoundError, subprocess.CalledProcessError):
+            pass
+
+        try:
+            out = subprocess.check_output(
+                ["readelf", "--version-info", library_path],
+                text=True, stderr=subprocess.STDOUT
+            )
+            # Find all GLIBC_x.y.z version strings
+            glibc_versions = _re.findall(r'GLIBC_(\d+\.\d+(?:\.\d+)?)', out)
+            if glibc_versions:
+                def _ver(v):
+                    return tuple(int(x) for x in v.split("."))
+                max_glibc = max(glibc_versions, key=_ver)
+                self._log(f"Minimum GLIBC required: {max_glibc} "
+                          f"(all: {', '.join(sorted(set(glibc_versions), key=_ver))})")
+            # GCC version strings
+            gcc_versions = _re.findall(r'GCC_(\d+\.\d+(?:\.\d+)?)', out)
+            if gcc_versions:
+                def _ver(v):
+                    return tuple(int(x) for x in v.split("."))
+                max_gcc = max(gcc_versions, key=_ver)
+                self._log(f"Minimum GCC ABI required: {max_gcc} "
+                          f"(all: {', '.join(sorted(set(gcc_versions), key=_ver))})")
+        except (FileNotFoundError, subprocess.CalledProcessError):
+            pass
+
+        # ---- nm: exported symbol count + key symbol presence -----------
+        try:
+            out = subprocess.check_output(
+                ["nm", "-D", "--defined-only", library_path],
+                text=True, stderr=subprocess.STDOUT
+            )
+            lines = [l for l in out.splitlines() if l.strip()]
+            self._log(f"Exported symbol count: {len(lines)}")
+
+            key_symbols = [
+                "initialize_bridge", "uninitialize_bridge",
+                "instance_window_gl", "set_window_polling",
+                "draw_interop_quilt_texture_gl", "draw_interop_rgbd_texture_gl",
+            ]
+            found     = [s for s in key_symbols if any(s in l for l in lines)]
+            not_found = [s for s in key_symbols if s not in found]
+            self._log(f"Key symbols present:  {', '.join(found) or 'none'}")
+            if not_found:
+                self._log(f"Key symbols MISSING:  {', '.join(not_found)}")
+        except (FileNotFoundError, subprocess.CalledProcessError):
+            pass
+
+        # ---- file: ELF class / build-id --------------------------------
+        try:
+            out = subprocess.check_output(
+                ["file", library_path],
+                text=True, stderr=subprocess.STDOUT
+            )
+            self._log(f"file(1) info: {out.strip()}")
+        except (FileNotFoundError, subprocess.CalledProcessError):
+            pass
 
     # ------------- bind native exports ---------------------------------
     def _bind_functions(self) -> None:
