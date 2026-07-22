@@ -20,7 +20,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 import importlib.resources as ir
 import subprocess
-from BridgeDataTypes import Window, PixelFormats, LKGCalibration, DefaultQuiltSettings
+
+if __package__:
+    from .BridgeDataTypes import Window, PixelFormats, LKGCalibration, DefaultQuiltSettings
+else:  # Allow legacy direct execution from src/bridge_python_sdk.
+    from BridgeDataTypes import Window, PixelFormats, LKGCalibration, DefaultQuiltSettings
 
 _MIN_BRIDGE_VERSION = "2.6.0"
 _BRIDGE_VERSION     = "2.6.2"
@@ -568,7 +572,7 @@ class BridgeAPI:
 
     def get_display_aspect(self, window_handle: Window) -> float:
         a = c_float()
-        if self._get_display_aspect(window_handle, byref(a)):
+        if self._get_displayaspect(window_handle, byref(a)):
             return a.value
         raise RuntimeError("get_displayaspect failed")
 
@@ -687,16 +691,16 @@ class BridgeAPI:
         return cal
 
     # and then one‐liner wrappers for the rest of the “for_display” calls:
-    def get_invview_for_display(self, idx):   return self._scalar_call(self._get_invview_for_display,  idx, c_int32)
-    def get_ri_for_display(self, idx):        return self._scalar_call(self._get_ri_for_display,       idx, c_int32)
-    def get_bi_for_display(self, idx):        return self._scalar_call(self._get_bi_for_display,       idx, c_int32)
-    def get_tilt_for_display(self, idx):      return self._scalar_call(self._get_tilt_for_display,     idx, c_float)
-    def get_display_aspect_for_display(self, idx): return self._scalar_call(self._get_displayaspect_for_display, idx, c_float)
-    def get_fringe_for_display(self, idx):    return self._scalar_call(self._get_fringe_for_display,   idx, c_float)
-    def get_subp_for_display(self, idx):      return self._scalar_call(self._get_subp_for_display,     idx, c_float)
-    def get_viewcone_for_display(self, idx):  return self._scalar_call(self._get_viewcone_for_display, idx, c_float)
-    def get_center_for_display(self, idx):    return self._scalar_call(self._get_center_for_display,   idx, c_float)
-    def get_pitch_for_display(self, idx):     return self._scalar_call(self._get_pitch_for_display,    idx, c_float)
+    def get_invview_for_display(self, idx):   return self._scalar_call(self._get_invview_for_display,  idx, c_int32, self.debug)
+    def get_ri_for_display(self, idx):        return self._scalar_call(self._get_ri_for_display,       idx, c_int32, self.debug)
+    def get_bi_for_display(self, idx):        return self._scalar_call(self._get_bi_for_display,       idx, c_int32, self.debug)
+    def get_tilt_for_display(self, idx):      return self._scalar_call(self._get_tilt_for_display,     idx, c_float, self.debug)
+    def get_display_aspect_for_display(self, idx): return self._scalar_call(self._get_displayaspect_for_display, idx, c_float, self.debug)
+    def get_fringe_for_display(self, idx):    return self._scalar_call(self._get_fringe_for_display,   idx, c_float, self.debug)
+    def get_subp_for_display(self, idx):      return self._scalar_call(self._get_subp_for_display,     idx, c_float, self.debug)
+    def get_viewcone_for_display(self, idx):  return self._scalar_call(self._get_viewcone_for_display, idx, c_float, self.debug)
+    def get_center_for_display(self, idx):    return self._scalar_call(self._get_center_for_display,   idx, c_float, self.debug)
+    def get_pitch_for_display(self, idx):     return self._scalar_call(self._get_pitch_for_display,    idx, c_float, self.debug)
     def get_default_quilt_settings_for_display(
         self, idx
     ) -> DefaultQuiltSettings:
